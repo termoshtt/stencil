@@ -2,11 +2,11 @@ use super::*;
 
 /// Two-dimensional torus
 #[derive(Clone)]
-pub struct Torus2<A: LinalgScalar + Clone + Copy> {
+pub struct Torus2<A: LinalgScalar> {
     data: Array2<A>,
 }
 
-impl<A: LinalgScalar + Clone + Copy> Torus2<A> {
+impl<A: LinalgScalar> Torus2<A> {
     pub fn zeros(n: usize, m: usize) -> Self {
         Self {
             data: Array::zeros((n + 2, m + 2)),

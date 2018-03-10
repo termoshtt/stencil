@@ -32,7 +32,33 @@ pub trait Stencil {
 }
 
 #[derive(Clone, Copy)]
-pub struct N1D2<A: Clone + Copy> {
+pub struct N1D1<A: LinalgScalar> {
+    pub l: A, // left
+    pub r: A, // right
+    pub c: A, // center
+}
+
+impl<A: LinalgScalar> Stencil for N1D1<A> {
+    type Elem = A;
+    type Dim = Ix1;
+}
+
+#[derive(Clone, Copy)]
+pub struct N2D1<A: LinalgScalar> {
+    pub l: A,  // left
+    pub r: A,  // right
+    pub ll: A, // left of left
+    pub rr: A, // right of right
+    pub c: A,  // center
+}
+
+impl<A: LinalgScalar> Stencil for N2D1<A> {
+    type Elem = A;
+    type Dim = Ix1;
+}
+
+#[derive(Clone, Copy)]
+pub struct N1D2<A: LinalgScalar> {
     pub t: A, // top
     pub b: A, // bottom
     pub l: A, // left
@@ -40,7 +66,7 @@ pub struct N1D2<A: Clone + Copy> {
     pub c: A, // center
 }
 
-impl<A: LinalgScalar + Clone + Copy> Stencil for N1D2<A> {
+impl<A: LinalgScalar> Stencil for N1D2<A> {
     type Elem = A;
     type Dim = Ix2;
 }

@@ -28,14 +28,14 @@ impl<A: LinalgScalar + Clone + Copy> Torus2<A> {
     fn st_map_core<B, F>(&self, out: &mut Torus2<B>, func: F)
     where
         B: LinalgScalar,
-        F: Fn(Neighbors<A>) -> B,
+        F: Fn(N1D2<A>) -> B,
     {
         let (n, m) = self.shape();
         let data = self.data.as_slice().unwrap();
         let out = out.data.as_slice_mut().unwrap();
         for i in 0..n {
             for j in 0..m {
-                let neighbor = Neighbors {
+                let neighbor = N1D2 {
                     t: data[(i + 0) * (m + 2) + (j + 0)],
                     b: data[(i + 2) * (m + 2) + (j + 0)],
                     l: data[(i + 1) * (m + 2) + (j + 0)],
@@ -57,12 +57,10 @@ impl<A: LinalgScalar> NdArray for Torus2<A> {
     }
 }
 
-impl<A: LinalgScalar> StencilArray for Torus2<A> {
-    type Neighbor = Neighbors<A>;
-
+impl<A: LinalgScalar> StencilArray<N1D2<A>> for Torus2<A> {
     fn stencil_map<F>(&self, out: &mut Self, func: F)
     where
-        F: Fn(Neighbors<A>) -> A,
+        F: Fn(N1D2<A>) -> A,
     {
         self.st_map_core(out, func);
         out.fill_periodic();

@@ -2,6 +2,7 @@
 extern crate ndarray;
 
 pub mod torus;
+pub mod pad_torus;
 
 use ndarray::*;
 
@@ -9,6 +10,10 @@ pub trait NdArray {
     type Elem: LinalgScalar;
     type Dim: Dimension;
     fn shape(&self) -> <Self::Dim as Dimension>::Pattern;
+}
+
+pub trait Creatable: Clone + NdArray {
+    fn zeros(<Self::Dim as Dimension>::Pattern) -> Self;
 }
 
 pub trait Viewable: NdArray {
@@ -29,6 +34,7 @@ where
 pub trait Stencil {
     type Elem: LinalgScalar;
     type Dim: Dimension;
+    fn frame_lengh() -> usize;
 }
 
 #[derive(Clone, Copy)]
@@ -41,6 +47,9 @@ pub struct N1D1<A: LinalgScalar> {
 impl<A: LinalgScalar> Stencil for N1D1<A> {
     type Elem = A;
     type Dim = Ix1;
+    fn frame_lengh() -> usize {
+        1
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -55,6 +64,9 @@ pub struct N2D1<A: LinalgScalar> {
 impl<A: LinalgScalar> Stencil for N2D1<A> {
     type Elem = A;
     type Dim = Ix1;
+    fn frame_lengh() -> usize {
+        2
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -69,4 +81,7 @@ pub struct N1D2<A: LinalgScalar> {
 impl<A: LinalgScalar> Stencil for N1D2<A> {
     type Elem = A;
     type Dim = Ix2;
+    fn frame_lengh() -> usize {
+        1
+    }
 }

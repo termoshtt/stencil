@@ -1,9 +1,13 @@
+//! Define N-dimensional torus
+
 use super::*;
 use num_traits::Float;
 
 use std::f64::consts::PI;
 
 /// N-dimensional torus
+///
+/// For simulations with the periodic boundary condition
 #[derive(Clone)]
 pub struct Torus<A: LinalgScalar, D: Dimension> {
     data: Array<A, D>,

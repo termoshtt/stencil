@@ -6,7 +6,6 @@ use stencil::*;
 use ndarray::*;
 use ndarray_linalg::*;
 
-// Test central difference of `sin(kx)` to be `-k cos(kx)`
 #[test]
 fn central_diff() {
     let n = 128;

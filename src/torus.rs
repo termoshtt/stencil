@@ -1,78 +1,180 @@
-use super::*;
+//! Define N-dimensional torus
 
-/// Two-dimensional torus
+use super::*;
+use num_traits::Float;
+
+use std::f64::consts::PI;
+
+/// N-dimensional torus
+///
+/// For simulations with the periodic boundary condition
 #[derive(Clone)]
-pub struct Torus2<A: LinalgScalar> {
-    data: Array2<A>,
+pub struct Torus<A: LinalgScalar, D: Dimension> {
+    data: Array<A, D>,
 }
 
-impl<A: LinalgScalar> Torus2<A> {
-    pub fn zeros(n: usize, m: usize) -> Self {
+impl<A, D> NdArray for Torus<A, D>
+where
+    A: LinalgScalar,
+    D: Dimension,
+{
+    type Elem = A;
+    type Dim = D;
+    fn shape(&self) -> D::Pattern {
+        self.data.dim()
+    }
+}
+
+impl<A, D> Creatable for Torus<A, D>
+where
+    A: LinalgScalar,
+    D: Dimension,
+{
+    fn zeros(p: D::Pattern) -> Self {
         Self {
-            data: Array::zeros((n + 2, m + 2)),
+            data: Array::zeros(p),
         }
     }
+}
 
-    fn fill_periodic(&mut self) {
-        let (n, m) = self.shape();
-        for j in 0..m {
-            self.data[(0, j + 1)] = self.data[(n - 2, j + 1)];
-            self.data[(n - 1, j + 1)] = self.data[(1, j + 1)];
-        }
-        for i in 0..n {
-            self.data[(i + 1, 0)] = self.data[(i + 1, m - 2)];
-            self.data[(i + 1, m - 1)] = self.data[(i + 1, 1)];
-        }
+impl<A, D> Viewable for Torus<A, D>
+where
+    A: LinalgScalar,
+    D: Dimension,
+{
+    fn as_view(&self) -> ArrayView<Self::Elem, Self::Dim> {
+        self.data.view()
     }
+    fn as_view_mut(&mut self) -> ArrayViewMut<Self::Elem, Self::Dim> {
+        self.data.view_mut()
+    }
+}
 
-    fn st_map_core<B, F>(&self, out: &mut Torus2<B>, func: F)
+impl<A: LinalgScalar> StencilArray<N1D1<A>> for Torus<A, Ix1> {
+    fn stencil_map<Func>(&self, out: &mut Self, f: Func)
     where
-        B: LinalgScalar,
-        F: Fn(N1D2<A>) -> B,
+        Func: Fn(N1D1<A>) -> Self::Elem,
+    {
+        let n = self.shape();
+        for i in 0..n {
+            let nn = N1D1 {
+                l: self.data[(n + i - 1) % n],
+                r: self.data[(i + 1) % n],
+                c: self.data[i],
+            };
+            out.data[i] = f(nn);
+        }
+    }
+}
+
+impl<A: LinalgScalar> StencilArray<N2D1<A>> for Torus<A, Ix1> {
+    fn stencil_map<Func>(&self, out: &mut Self, f: Func)
+    where
+        Func: Fn(N2D1<A>) -> Self::Elem,
+    {
+        let n = self.shape();
+        for i in 0..n {
+            let nn = N2D1 {
+                ll: self.data[(n + i - 2) % n],
+                rr: self.data[(i + 2) % n],
+                l: self.data[(n + i - 1) % n],
+                r: self.data[(i + 1) % n],
+                c: self.data[i],
+            };
+            out.data[i] = f(nn);
+        }
+    }
+}
+
+impl<A: LinalgScalar> StencilArray<N1D2<A>> for Torus<A, Ix2> {
+    fn stencil_map<Func>(&self, out: &mut Self, f: Func)
+    where
+        Func: Fn(N1D2<A>) -> Self::Elem,
     {
         let (n, m) = self.shape();
-        let data = self.data.as_slice().unwrap();
-        let out = out.data.as_slice_mut().unwrap();
         for i in 0..n {
             for j in 0..m {
-                let neighbor = N1D2 {
-                    t: data[(i + 0) * (m + 2) + (j + 0)],
-                    b: data[(i + 2) * (m + 2) + (j + 0)],
-                    l: data[(i + 1) * (m + 2) + (j + 0)],
-                    r: data[(i + 1) * (m + 2) + (j + 2)],
-                    c: data[(i + 1) * (m + 2) + (j + 1)],
+                let nn = N1D2 {
+                    t: self.data[(i, (j + 1) % m)],
+                    b: self.data[(i, (m + j - 1) % m)],
+                    l: self.data[((n + i - 1) % n, j)],
+                    r: self.data[((i + 1) % n, j)],
+                    c: self.data[(i, j)],
                 };
-                out[(i + 1) * (m + 2) + (j + 1)] = func(neighbor);
+                out.data[(i, j)] = f(nn);
             }
         }
     }
 }
 
-impl<A: LinalgScalar> NdArray for Torus2<A> {
-    type Elem = A;
-    type Dim = Ix2;
-    fn shape(&self) -> (usize, usize) {
-        let (n, m) = self.data.dim();
-        (n - 2, m - 2)
-    }
-}
+impl<A: LinalgScalar + Float> Manifold for Torus<A, Ix1> {
+    type Coordinate = A;
 
-impl<A: LinalgScalar> StencilArray<N1D2<A>> for Torus2<A> {
-    fn stencil_map<F>(&self, out: &mut Self, func: F)
+    fn dx(&self) -> Self::Coordinate {
+        A::from(2.0 * PI / self.data.len() as f64).unwrap()
+    }
+
+    fn coordinate_fill<F>(&mut self, f: F)
     where
-        F: Fn(N1D2<A>) -> A,
+        F: Fn(Self::Coordinate) -> Self::Elem,
     {
-        self.st_map_core(out, func);
-        out.fill_periodic();
+        let dx = self.dx();
+        for (i, v) in self.data.iter_mut().enumerate() {
+            let i = A::from(i).unwrap();
+            *v = f(i * dx);
+        }
+    }
+
+    fn coordinate_map<F>(&mut self, f: F)
+    where
+        F: Fn(Self::Coordinate, Self::Elem) -> Self::Elem,
+    {
+        let dx = self.dx();
+        for (i, v) in self.data.iter_mut().enumerate() {
+            let i = A::from(i).unwrap();
+            *v = f(i * dx, *v);
+        }
     }
 }
 
-impl<A: LinalgScalar> Viewable for Torus2<A> {
-    fn as_view(&self) -> ArrayView2<A> {
-        self.data.slice(s![1..-1, 1..-1])
+impl<A: LinalgScalar + Float> Manifold for Torus<A, Ix2> {
+    type Coordinate = (A, A);
+
+    fn dx(&self) -> Self::Coordinate {
+        let (n, m) = self.shape();
+        (
+            A::from(2.0 * PI / n as f64).unwrap(),
+            A::from(2.0 * PI / m as f64).unwrap(),
+        )
     }
 
-    fn as_view_mut(&mut self) -> ArrayViewMut2<A> {
-        self.data.slice_mut(s![1..-1, 1..-1])
+    fn coordinate_fill<F>(&mut self, f: F)
+    where
+        F: Fn(Self::Coordinate) -> Self::Elem,
+    {
+        let (n, m) = self.shape();
+        let (dx, dy) = self.dx();
+        for i in 0..n {
+            for j in 0..m {
+                let x = A::from(i).unwrap() * dx;
+                let y = A::from(j).unwrap() * dy;
+                self.data[(i, j)] = f((x, y));
+            }
+        }
+    }
+
+    fn coordinate_map<F>(&mut self, f: F)
+    where
+        F: Fn(Self::Coordinate, Self::Elem) -> Self::Elem,
+    {
+        let (n, m) = self.shape();
+        let (dx, dy) = self.dx();
+        for i in 0..n {
+            for j in 0..m {
+                let x = A::from(i).unwrap() * dx;
+                let y = A::from(j).unwrap() * dy;
+                self.data[(i, j)] = f((x, y), self.data[(i, j)]);
+            }
+        }
     }
 }

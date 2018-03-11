@@ -5,3 +5,7 @@ authors = ["Toshiki Teramura <toshiki.teramura@gmail.com>"]
 
 [dependencies]
 ndarray = "0.11"
+num-traits = "0.2"
+
+[dev-dependencies]
+ndarray-linalg = { version = "*", features = ["intel-mkl"] }

@@ -49,25 +49,53 @@ impl<A: LinalgScalar> StencilArray<N1D1<A>> for Torus<A, Ix1> {
         Func: Fn(N1D1<A>) -> Self::Elem,
     {
         let n = self.shape();
-        let nn = N1D1 {
-            l: self.data[n - 1],
-            r: self.data[1],
-            c: self.data[0],
-        };
-        out.data[0] = f(nn);
-        for i in 1..(n - 1) {
+        for i in 0..n {
             let nn = N1D1 {
-                l: self.data[i - 1],
-                r: self.data[i + 1],
+                l: self.data[(n + i - 1) % n],
+                r: self.data[(i + 1) % n],
                 c: self.data[i],
             };
             out.data[i] = f(nn);
         }
-        let nn = N1D1 {
-            l: self.data[n - 2],
-            r: self.data[0],
-            c: self.data[n - 1],
-        };
-        out.data[n - 1] = f(nn);
+    }
+}
+
+impl<A: LinalgScalar> StencilArray<N2D1<A>> for Torus<A, Ix1> {
+    fn stencil_map<Func>(&self, out: &mut Self, f: Func)
+    where
+        Func: Fn(N2D1<A>) -> Self::Elem,
+    {
+        let n = self.shape();
+        for i in 0..n {
+            let nn = N2D1 {
+                ll: self.data[(n + i - 2) % n],
+                rr: self.data[(i + 2) % n],
+                l: self.data[(n + i - 1) % n],
+                r: self.data[(i + 1) % n],
+                c: self.data[i],
+            };
+            out.data[i] = f(nn);
+        }
+    }
+}
+
+impl<A: LinalgScalar> StencilArray<N1D2<A>> for Torus<A, Ix2> {
+    fn stencil_map<Func>(&self, out: &mut Self, f: Func)
+    where
+        Func: Fn(N1D2<A>) -> Self::Elem,
+    {
+        let (n, m) = self.shape();
+        for i in 0..n {
+            for j in 0..m {
+                let nn = N1D2 {
+                    t: self.data[(i, (j + 1) % m)],
+                    b: self.data[(i, (m + j - 1) % m)],
+                    l: self.data[((n + i - 1) % n, j)],
+                    r: self.data[((i + 1) % n, j)],
+                    c: self.data[(i, j)],
+                };
+                out.data[(i, j)] = f(nn);
+            }
+        }
     }
 }

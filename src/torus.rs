@@ -1,4 +1,7 @@
 use super::*;
+use num_traits::Float;
+
+use std::f64::consts::PI;
 
 /// N-dimensional torus
 #[derive(Clone)]
@@ -95,6 +98,78 @@ impl<A: LinalgScalar> StencilArray<N1D2<A>> for Torus<A, Ix2> {
                     c: self.data[(i, j)],
                 };
                 out.data[(i, j)] = f(nn);
+            }
+        }
+    }
+}
+
+impl<A: LinalgScalar + Float> Manifold for Torus<A, Ix1> {
+    type Coordinate = A;
+
+    fn dx(&self) -> Self::Coordinate {
+        A::from(2.0 * PI / self.data.len() as f64).unwrap()
+    }
+
+    fn coordinate_fill<F>(&mut self, f: F)
+    where
+        F: Fn(Self::Coordinate) -> Self::Elem,
+    {
+        let dx = self.dx();
+        for (i, v) in self.data.iter_mut().enumerate() {
+            let i = A::from(i).unwrap();
+            *v = f(i * dx);
+        }
+    }
+
+    fn coordinate_map<F>(&mut self, f: F)
+    where
+        F: Fn(Self::Coordinate, Self::Elem) -> Self::Elem,
+    {
+        let dx = self.dx();
+        for (i, v) in self.data.iter_mut().enumerate() {
+            let i = A::from(i).unwrap();
+            *v = f(i * dx, *v);
+        }
+    }
+}
+
+impl<A: LinalgScalar + Float> Manifold for Torus<A, Ix2> {
+    type Coordinate = (A, A);
+
+    fn dx(&self) -> Self::Coordinate {
+        let (n, m) = self.shape();
+        (
+            A::from(2.0 * PI / n as f64).unwrap(),
+            A::from(2.0 * PI / m as f64).unwrap(),
+        )
+    }
+
+    fn coordinate_fill<F>(&mut self, f: F)
+    where
+        F: Fn(Self::Coordinate) -> Self::Elem,
+    {
+        let (n, m) = self.shape();
+        let (dx, dy) = self.dx();
+        for i in 0..n {
+            for j in 0..m {
+                let x = A::from(i).unwrap() * dx;
+                let y = A::from(j).unwrap() * dy;
+                self.data[(i, j)] = f((x, y));
+            }
+        }
+    }
+
+    fn coordinate_map<F>(&mut self, f: F)
+    where
+        F: Fn(Self::Coordinate, Self::Elem) -> Self::Elem,
+    {
+        let (n, m) = self.shape();
+        let (dx, dy) = self.dx();
+        for i in 0..n {
+            for j in 0..m {
+                let x = A::from(i).unwrap() * dx;
+                let y = A::from(j).unwrap() * dy;
+                self.data[(i, j)] = f((x, y), self.data[(i, j)]);
             }
         }
     }

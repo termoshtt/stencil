@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate ndarray;
+extern crate num_traits;
 
 pub mod torus;
 pub mod pad_torus;
@@ -19,6 +20,20 @@ pub trait Creatable: Clone + NdArray {
 pub trait Viewable: NdArray {
     fn as_view(&self) -> ArrayView<Self::Elem, Self::Dim>;
     fn as_view_mut(&mut self) -> ArrayViewMut<Self::Elem, Self::Dim>;
+}
+
+pub trait Manifold: NdArray {
+    type Coordinate;
+
+    fn dx(&self) -> Self::Coordinate;
+
+    fn coordinate_fill<F>(&mut self, F)
+    where
+        F: Fn(Self::Coordinate) -> Self::Elem;
+
+    fn coordinate_map<F>(&mut self, F)
+    where
+        F: Fn(Self::Coordinate, Self::Elem) -> Self::Elem;
 }
 
 pub trait StencilArray<St>: NdArray

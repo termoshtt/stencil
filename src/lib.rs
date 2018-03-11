@@ -34,7 +34,6 @@ where
 pub trait Stencil {
     type Elem: LinalgScalar;
     type Dim: Dimension;
-    fn frame_lengh() -> usize;
 }
 
 #[derive(Clone, Copy)]
@@ -47,9 +46,6 @@ pub struct N1D1<A: LinalgScalar> {
 impl<A: LinalgScalar> Stencil for N1D1<A> {
     type Elem = A;
     type Dim = Ix1;
-    fn frame_lengh() -> usize {
-        1
-    }
 }
 
 #[derive(Clone, Copy)]
@@ -64,9 +60,6 @@ pub struct N2D1<A: LinalgScalar> {
 impl<A: LinalgScalar> Stencil for N2D1<A> {
     type Elem = A;
     type Dim = Ix1;
-    fn frame_lengh() -> usize {
-        2
-    }
 }
 
 #[derive(Clone, Copy)]
@@ -81,7 +74,4 @@ pub struct N1D2<A: LinalgScalar> {
 impl<A: LinalgScalar> Stencil for N1D2<A> {
     type Elem = A;
     type Dim = Ix2;
-    fn frame_lengh() -> usize {
-        1
-    }
 }

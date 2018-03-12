@@ -38,13 +38,12 @@ impl<A: LinalgScalar, P: Padding> NdArray for Line<A, P> {
     fn shape(&self) -> usize {
         self.data.len() - 2 * P::len()
     }
-}
 
-impl<A: LinalgScalar, P: Padding> Viewable for Line<A, P> {
     fn as_view(&self) -> ArrayView1<A> {
         let p = P::len() as i32;
         self.data.slice(s![p..-p])
     }
+
     fn as_view_mut(&mut self) -> ArrayViewMut1<A> {
         let p = P::len() as i32;
         self.data.slice_mut(s![p..-p])
@@ -83,7 +82,7 @@ where
 {
     fn stencil_map<Output, Func>(&self, out: &mut Output, f: Func)
     where
-        Output: Viewable<Dim = Self::Dim>,
+        Output: NdArray<Dim = Self::Dim>,
         Func: Fn(N1D1<A>) -> Output::Elem,
     {
         let n = self.shape();

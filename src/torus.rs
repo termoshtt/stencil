@@ -20,8 +20,16 @@ where
 {
     type Elem = A;
     type Dim = D;
+
     fn shape(&self) -> D::Pattern {
         self.data.dim()
+    }
+
+    fn as_view(&self) -> ArrayView<Self::Elem, Self::Dim> {
+        self.data.view()
+    }
+    fn as_view_mut(&mut self) -> ArrayViewMut<Self::Elem, Self::Dim> {
+        self.data.view_mut()
     }
 }
 
@@ -37,23 +45,10 @@ where
     }
 }
 
-impl<A, D> Viewable for Torus<A, D>
-where
-    A: LinalgScalar,
-    D: Dimension,
-{
-    fn as_view(&self) -> ArrayView<Self::Elem, Self::Dim> {
-        self.data.view()
-    }
-    fn as_view_mut(&mut self) -> ArrayViewMut<Self::Elem, Self::Dim> {
-        self.data.view_mut()
-    }
-}
-
 impl<A: LinalgScalar> StencilArray<N1D1<A>> for Torus<A, Ix1> {
     fn stencil_map<Output, Func>(&self, out: &mut Output, f: Func)
     where
-        Output: Viewable<Dim = Self::Dim>,
+        Output: NdArray<Dim = Self::Dim>,
         Func: Fn(N1D1<A>) -> Output::Elem,
     {
         let n = self.shape();
@@ -72,7 +67,7 @@ impl<A: LinalgScalar> StencilArray<N1D1<A>> for Torus<A, Ix1> {
 impl<A: LinalgScalar> StencilArray<N2D1<A>> for Torus<A, Ix1> {
     fn stencil_map<Output, Func>(&self, out: &mut Output, f: Func)
     where
-        Output: Viewable<Dim = Self::Dim>,
+        Output: NdArray<Dim = Self::Dim>,
         Func: Fn(N2D1<A>) -> Output::Elem,
     {
         let n = self.shape();
@@ -93,7 +88,7 @@ impl<A: LinalgScalar> StencilArray<N2D1<A>> for Torus<A, Ix1> {
 impl<A: LinalgScalar> StencilArray<N1D2<A>> for Torus<A, Ix2> {
     fn stencil_map<Output, Func>(&self, out: &mut Output, f: Func)
     where
-        Output: Viewable<Dim = Self::Dim>,
+        Output: NdArray<Dim = Self::Dim>,
         Func: Fn(N1D2<A>) -> Output::Elem,
     {
         let (n, m) = self.shape();

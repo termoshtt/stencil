@@ -1,8 +1,9 @@
 //! Define N-dimensional torus
 
 use super::*;
-use num_traits::Float;
 
+use ndarray::*;
+use num_traits::Float;
 use std::f64::consts::PI;
 
 /// N-dimensional torus

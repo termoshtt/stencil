@@ -1,4 +1,6 @@
 use super::*;
+
+use ndarray::*;
 use num_traits::Float;
 
 pub fn cfill_1d<A, V, F>(a: &mut V, dx: A, f: F)

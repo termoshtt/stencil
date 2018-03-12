@@ -54,34 +54,7 @@ pub mod region;
 pub mod torus;
 mod impl_util;
 mod stencil;
+mod array;
 
 pub use stencil::*;
-
-use ndarray::*;
-
-pub trait NdArray {
-    type Elem: LinalgScalar;
-    type Dim: Dimension;
-    fn shape(&self) -> <Self::Dim as Dimension>::Pattern;
-    fn as_view(&self) -> ArrayView<Self::Elem, Self::Dim>;
-    fn as_view_mut(&mut self) -> ArrayViewMut<Self::Elem, Self::Dim>;
-}
-
-/// Uniformly coordinated array
-pub trait Manifold: NdArray {
-    /// Type of coordinate
-    type Coordinate;
-
-    /// Increment of coordinate
-    fn dx(&self) -> Self::Coordinate;
-
-    /// Fill manifold by a function
-    fn coordinate_fill<F>(&mut self, F)
-    where
-        F: Fn(Self::Coordinate) -> Self::Elem;
-
-    /// Map values on manifold using a function
-    fn coordinate_map<F>(&mut self, F)
-    where
-        F: Fn(Self::Coordinate, Self::Elem) -> Self::Elem;
-}
+pub use array::*;

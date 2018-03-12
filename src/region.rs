@@ -1,5 +1,7 @@
 use super::*;
 use super::padding::*;
+
+use ndarray::*;
 use num_traits::Float;
 use std::marker::PhantomData;
 

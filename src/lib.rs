@@ -49,12 +49,14 @@
 extern crate ndarray;
 extern crate num_traits;
 
+pub mod padding;
 pub mod region;
 pub mod torus;
 pub mod pad_torus;
 mod impl_util;
 
 use ndarray::*;
+use padding::*;
 
 pub trait NdArray {
     type Elem: LinalgScalar;
@@ -104,6 +106,7 @@ where
 pub trait Stencil {
     type Elem: LinalgScalar;
     type Dim: Dimension;
+    type Padding: Padding;
 }
 
 /// one-neighbor, one-dimensional stencil
@@ -120,6 +123,7 @@ pub struct N1D1<A: LinalgScalar> {
 impl<A: LinalgScalar> Stencil for N1D1<A> {
     type Elem = A;
     type Dim = Ix1;
+    type Padding = P1;
 }
 
 /// two-neighbor, one-dimensional stencil
@@ -140,6 +144,7 @@ pub struct N2D1<A: LinalgScalar> {
 impl<A: LinalgScalar> Stencil for N2D1<A> {
     type Elem = A;
     type Dim = Ix1;
+    type Padding = P2;
 }
 
 /// one-neighbor, two-dimensional stencil
@@ -160,4 +165,5 @@ pub struct N1D2<A: LinalgScalar> {
 impl<A: LinalgScalar> Stencil for N1D2<A> {
     type Elem = A;
     type Dim = Ix2;
+    type Padding = P1;
 }

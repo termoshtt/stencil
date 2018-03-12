@@ -119,10 +119,7 @@ impl<A: LinalgScalar + Float> Manifold for Torus<A, Ix1> {
         F: Fn(Self::Coordinate) -> Self::Elem,
     {
         let dx = self.dx();
-        for (i, v) in self.data.iter_mut().enumerate() {
-            let i = A::from(i).unwrap();
-            *v = f(i * dx);
-        }
+        impl_util::cfill_1d(self, dx, f)
     }
 
     fn coordinate_map<F>(&mut self, f: F)
@@ -130,10 +127,7 @@ impl<A: LinalgScalar + Float> Manifold for Torus<A, Ix1> {
         F: Fn(Self::Coordinate, Self::Elem) -> Self::Elem,
     {
         let dx = self.dx();
-        for (i, v) in self.data.iter_mut().enumerate() {
-            let i = A::from(i).unwrap();
-            *v = f(i * dx, *v);
-        }
+        impl_util::cmap_1d(self, dx, f)
     }
 }
 

@@ -49,8 +49,10 @@
 extern crate ndarray;
 extern crate num_traits;
 
+pub mod region;
 pub mod torus;
 pub mod pad_torus;
+mod impl_util;
 
 use ndarray::*;
 

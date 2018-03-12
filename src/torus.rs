@@ -51,28 +51,32 @@ where
 }
 
 impl<A: LinalgScalar> StencilArray<N1D1<A>> for Torus<A, Ix1> {
-    fn stencil_map<Func>(&self, out: &mut Self, f: Func)
+    fn stencil_map<Output, Func>(&self, out: &mut Output, f: Func)
     where
-        Func: Fn(N1D1<A>) -> Self::Elem,
+        Output: Viewable<Dim = Self::Dim>,
+        Func: Fn(N1D1<A>) -> Output::Elem,
     {
         let n = self.shape();
+        let mut out = out.as_view_mut();
         for i in 0..n {
             let nn = N1D1 {
                 l: self.data[(n + i - 1) % n],
                 r: self.data[(i + 1) % n],
                 c: self.data[i],
             };
-            out.data[i] = f(nn);
+            out[i] = f(nn);
         }
     }
 }
 
 impl<A: LinalgScalar> StencilArray<N2D1<A>> for Torus<A, Ix1> {
-    fn stencil_map<Func>(&self, out: &mut Self, f: Func)
+    fn stencil_map<Output, Func>(&self, out: &mut Output, f: Func)
     where
-        Func: Fn(N2D1<A>) -> Self::Elem,
+        Output: Viewable<Dim = Self::Dim>,
+        Func: Fn(N2D1<A>) -> Output::Elem,
     {
         let n = self.shape();
+        let mut out = out.as_view_mut();
         for i in 0..n {
             let nn = N2D1 {
                 ll: self.data[(n + i - 2) % n],
@@ -81,17 +85,19 @@ impl<A: LinalgScalar> StencilArray<N2D1<A>> for Torus<A, Ix1> {
                 r: self.data[(i + 1) % n],
                 c: self.data[i],
             };
-            out.data[i] = f(nn);
+            out[i] = f(nn);
         }
     }
 }
 
 impl<A: LinalgScalar> StencilArray<N1D2<A>> for Torus<A, Ix2> {
-    fn stencil_map<Func>(&self, out: &mut Self, f: Func)
+    fn stencil_map<Output, Func>(&self, out: &mut Output, f: Func)
     where
-        Func: Fn(N1D2<A>) -> Self::Elem,
+        Output: Viewable<Dim = Self::Dim>,
+        Func: Fn(N1D2<A>) -> Output::Elem,
     {
         let (n, m) = self.shape();
+        let mut out = out.as_view_mut();
         for i in 0..n {
             for j in 0..m {
                 let nn = N1D2 {
@@ -101,7 +107,7 @@ impl<A: LinalgScalar> StencilArray<N1D2<A>> for Torus<A, Ix2> {
                     r: self.data[((i + 1) % n, j)],
                     c: self.data[(i, j)],
                 };
-                out.data[(i, j)] = f(nn);
+                out[(i, j)] = f(nn);
             }
         }
     }

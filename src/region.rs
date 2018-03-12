@@ -81,11 +81,13 @@ where
     A: LinalgScalar,
     P: GreaterEq<<N1D1<A> as Stencil>::Padding>,
 {
-    fn stencil_map<Func>(&self, out: &mut Self, f: Func)
+    fn stencil_map<Output, Func>(&self, out: &mut Output, f: Func)
     where
-        Func: Fn(N1D1<A>) -> Self::Elem,
+        Output: Viewable<Dim = Self::Dim>,
+        Func: Fn(N1D1<A>) -> Output::Elem,
     {
         let n = self.shape();
+        let mut out = out.as_view_mut();
         for i in 0..n {
             let i = i + P::len();
             let nn = N1D1 {
@@ -93,8 +95,7 @@ where
                 r: self.data[(i + 1)],
                 c: self.data[i],
             };
-            out.data[i] = f(nn);
+            out[i] = f(nn);
         }
-        out.fill_boundary();
     }
 }

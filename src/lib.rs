@@ -52,7 +52,6 @@ extern crate num_traits;
 pub mod padding;
 pub mod region;
 pub mod torus;
-pub mod pad_torus;
 mod impl_util;
 
 use ndarray::*;
@@ -98,9 +97,10 @@ where
     St: Stencil<Elem = Self::Elem, Dim = Self::Dim>,
 {
     /// Execute a stencil calculation
-    fn stencil_map<Func>(&self, out: &mut Self, Func)
+    fn stencil_map<Output, Func>(&self, out: &mut Output, Func)
     where
-        Func: Fn(St) -> Self::Elem;
+        Output: Viewable<Dim = Self::Dim>,
+        Func: Fn(St) -> Output::Elem;
 }
 
 pub trait Stencil {

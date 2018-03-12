@@ -13,11 +13,7 @@ pub struct Torus<A: LinalgScalar, D: Dimension> {
     data: Array<A, D>,
 }
 
-impl<A, D> NdArray for Torus<A, D>
-where
-    A: LinalgScalar,
-    D: Dimension,
-{
+impl<A: LinalgScalar, D: Dimension> NdArray for Torus<A, D> {
     type Elem = A;
     type Dim = D;
 
@@ -33,12 +29,8 @@ where
     }
 }
 
-impl<A, D> Creatable for Torus<A, D>
-where
-    A: LinalgScalar,
-    D: Dimension,
-{
-    fn zeros(p: D::Pattern) -> Self {
+impl<A: LinalgScalar, D: Dimension> Torus<A, D> {
+    pub fn zeros(p: D::Pattern) -> Self {
         Self {
             data: Array::zeros(p),
         }

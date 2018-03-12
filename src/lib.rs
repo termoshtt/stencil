@@ -67,10 +67,6 @@ pub trait NdArray {
     fn as_view_mut(&mut self) -> ArrayViewMut<Self::Elem, Self::Dim>;
 }
 
-pub trait Creatable: Clone + NdArray {
-    fn zeros(<Self::Dim as Dimension>::Pattern) -> Self;
-}
-
 /// Uniformly coordinated array
 pub trait Manifold: NdArray {
     /// Type of coordinate

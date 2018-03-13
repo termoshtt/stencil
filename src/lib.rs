@@ -49,113 +49,11 @@
 extern crate ndarray;
 extern crate num_traits;
 
+pub mod padding;
+pub mod region;
 pub mod torus;
-pub mod pad_torus;
+mod stencil;
+mod array;
 
-use ndarray::*;
-
-pub trait NdArray {
-    type Elem: LinalgScalar;
-    type Dim: Dimension;
-    fn shape(&self) -> <Self::Dim as Dimension>::Pattern;
-}
-
-pub trait Creatable: Clone + NdArray {
-    fn zeros(<Self::Dim as Dimension>::Pattern) -> Self;
-}
-
-pub trait Viewable: NdArray {
-    fn as_view(&self) -> ArrayView<Self::Elem, Self::Dim>;
-    fn as_view_mut(&mut self) -> ArrayViewMut<Self::Elem, Self::Dim>;
-}
-
-/// Uniformly coordinated array
-pub trait Manifold: NdArray {
-    /// Type of coordinate
-    type Coordinate;
-
-    /// Increment of coordinate
-    fn dx(&self) -> Self::Coordinate;
-
-    /// Fill manifold by a function
-    fn coordinate_fill<F>(&mut self, F)
-    where
-        F: Fn(Self::Coordinate) -> Self::Elem;
-
-    /// Map values on manifold using a function
-    fn coordinate_map<F>(&mut self, F)
-    where
-        F: Fn(Self::Coordinate, Self::Elem) -> Self::Elem;
-}
-
-/// Array with stencil calculations
-pub trait StencilArray<St>: NdArray
-where
-    St: Stencil<Elem = Self::Elem, Dim = Self::Dim>,
-{
-    /// Execute a stencil calculation
-    fn stencil_map<Func>(&self, out: &mut Self, Func)
-    where
-        Func: Fn(St) -> Self::Elem;
-}
-
-pub trait Stencil {
-    type Elem: LinalgScalar;
-    type Dim: Dimension;
-}
-
-/// one-neighbor, one-dimensional stencil
-#[derive(Clone, Copy)]
-pub struct N1D1<A: LinalgScalar> {
-    /// left
-    pub l: A,
-    /// right
-    pub r: A,
-    /// center
-    pub c: A,
-}
-
-impl<A: LinalgScalar> Stencil for N1D1<A> {
-    type Elem = A;
-    type Dim = Ix1;
-}
-
-/// two-neighbor, one-dimensional stencil
-#[derive(Clone, Copy)]
-pub struct N2D1<A: LinalgScalar> {
-    /// left
-    pub l: A,
-    /// right
-    pub r: A,
-    /// left of left
-    pub ll: A,
-    /// right of right
-    pub rr: A,
-    /// center
-    pub c: A,
-}
-
-impl<A: LinalgScalar> Stencil for N2D1<A> {
-    type Elem = A;
-    type Dim = Ix1;
-}
-
-/// one-neighbor, two-dimensional stencil
-#[derive(Clone, Copy)]
-pub struct N1D2<A: LinalgScalar> {
-    /// top
-    pub t: A,
-    /// bottom
-    pub b: A,
-    /// left
-    pub l: A,
-    /// right
-    pub r: A,
-    /// center
-    pub c: A,
-}
-
-impl<A: LinalgScalar> Stencil for N1D2<A> {
-    type Elem = A;
-    type Dim = Ix2;
-}
+pub use stencil::*;
+pub use array::*;

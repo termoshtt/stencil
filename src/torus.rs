@@ -1,8 +1,9 @@
 //! Define N-dimensional torus
 
 use super::*;
-use num_traits::Float;
 
+use ndarray::*;
+use num_traits::Float;
 use std::f64::consts::PI;
 
 /// N-dimensional torus
@@ -13,35 +14,14 @@ pub struct Torus<A: LinalgScalar, D: Dimension> {
     data: Array<A, D>,
 }
 
-impl<A, D> NdArray for Torus<A, D>
-where
-    A: LinalgScalar,
-    D: Dimension,
-{
+impl<A: LinalgScalar, D: Dimension> NdArray for Torus<A, D> {
     type Elem = A;
     type Dim = D;
+
     fn shape(&self) -> D::Pattern {
         self.data.dim()
     }
-}
 
-impl<A, D> Creatable for Torus<A, D>
-where
-    A: LinalgScalar,
-    D: Dimension,
-{
-    fn zeros(p: D::Pattern) -> Self {
-        Self {
-            data: Array::zeros(p),
-        }
-    }
-}
-
-impl<A, D> Viewable for Torus<A, D>
-where
-    A: LinalgScalar,
-    D: Dimension,
-{
     fn as_view(&self) -> ArrayView<Self::Elem, Self::Dim> {
         self.data.view()
     }
@@ -50,29 +30,41 @@ where
     }
 }
 
+impl<A: LinalgScalar, D: Dimension> Torus<A, D> {
+    pub fn zeros(p: D::Pattern) -> Self {
+        Self {
+            data: Array::zeros(p),
+        }
+    }
+}
+
 impl<A: LinalgScalar> StencilArray<N1D1<A>> for Torus<A, Ix1> {
-    fn stencil_map<Func>(&self, out: &mut Self, f: Func)
+    fn stencil_map<Output, Func>(&self, out: &mut Output, f: Func)
     where
-        Func: Fn(N1D1<A>) -> Self::Elem,
+        Output: NdArray<Dim = Self::Dim>,
+        Func: Fn(N1D1<A>) -> Output::Elem,
     {
         let n = self.shape();
+        let mut out = out.as_view_mut();
         for i in 0..n {
             let nn = N1D1 {
                 l: self.data[(n + i - 1) % n],
                 r: self.data[(i + 1) % n],
                 c: self.data[i],
             };
-            out.data[i] = f(nn);
+            out[i] = f(nn);
         }
     }
 }
 
 impl<A: LinalgScalar> StencilArray<N2D1<A>> for Torus<A, Ix1> {
-    fn stencil_map<Func>(&self, out: &mut Self, f: Func)
+    fn stencil_map<Output, Func>(&self, out: &mut Output, f: Func)
     where
-        Func: Fn(N2D1<A>) -> Self::Elem,
+        Output: NdArray<Dim = Self::Dim>,
+        Func: Fn(N2D1<A>) -> Output::Elem,
     {
         let n = self.shape();
+        let mut out = out.as_view_mut();
         for i in 0..n {
             let nn = N2D1 {
                 ll: self.data[(n + i - 2) % n],
@@ -81,17 +73,19 @@ impl<A: LinalgScalar> StencilArray<N2D1<A>> for Torus<A, Ix1> {
                 r: self.data[(i + 1) % n],
                 c: self.data[i],
             };
-            out.data[i] = f(nn);
+            out[i] = f(nn);
         }
     }
 }
 
 impl<A: LinalgScalar> StencilArray<N1D2<A>> for Torus<A, Ix2> {
-    fn stencil_map<Func>(&self, out: &mut Self, f: Func)
+    fn stencil_map<Output, Func>(&self, out: &mut Output, f: Func)
     where
-        Func: Fn(N1D2<A>) -> Self::Elem,
+        Output: NdArray<Dim = Self::Dim>,
+        Func: Fn(N1D2<A>) -> Output::Elem,
     {
         let (n, m) = self.shape();
+        let mut out = out.as_view_mut();
         for i in 0..n {
             for j in 0..m {
                 let nn = N1D2 {
@@ -101,7 +95,7 @@ impl<A: LinalgScalar> StencilArray<N1D2<A>> for Torus<A, Ix2> {
                     r: self.data[((i + 1) % n, j)],
                     c: self.data[(i, j)],
                 };
-                out.data[(i, j)] = f(nn);
+                out[(i, j)] = f(nn);
             }
         }
     }
@@ -119,7 +113,7 @@ impl<A: LinalgScalar + Float> Manifold for Torus<A, Ix1> {
         F: Fn(Self::Coordinate) -> Self::Elem,
     {
         let dx = self.dx();
-        for (i, v) in self.data.iter_mut().enumerate() {
+        for (i, v) in self.as_view_mut().iter_mut().enumerate() {
             let i = A::from(i).unwrap();
             *v = f(i * dx);
         }
@@ -130,7 +124,7 @@ impl<A: LinalgScalar + Float> Manifold for Torus<A, Ix1> {
         F: Fn(Self::Coordinate, Self::Elem) -> Self::Elem,
     {
         let dx = self.dx();
-        for (i, v) in self.data.iter_mut().enumerate() {
+        for (i, v) in self.as_view_mut().iter_mut().enumerate() {
             let i = A::from(i).unwrap();
             *v = f(i * dx, *v);
         }

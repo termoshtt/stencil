@@ -55,7 +55,7 @@ impl<A: LinalgScalar, P: Padding> NdArray for Line<A, P> {
 impl<A: LinalgScalar + Float, P: Padding> Manifold for Line<A, P> {
     type Coordinate = A;
     fn dx(&self) -> A {
-        self.length / A::from(self.shape()).unwrap()
+        self.length / A::from(self.shape() + 2).unwrap()
     }
 
     fn coordinate_fill<F>(&mut self, f: F)
@@ -63,7 +63,10 @@ impl<A: LinalgScalar + Float, P: Padding> Manifold for Line<A, P> {
         F: Fn(Self::Coordinate) -> Self::Elem,
     {
         let dx = self.dx();
-        impl_util::cfill_1d(self, dx, f);
+        for (i, v) in self.as_view_mut().iter_mut().enumerate() {
+            let x = dx * A::from(i + 1).unwrap();
+            *v = f(x);
+        }
         self.fill_boundary();
     }
 
@@ -72,7 +75,10 @@ impl<A: LinalgScalar + Float, P: Padding> Manifold for Line<A, P> {
         F: Fn(Self::Coordinate, Self::Elem) -> Self::Elem,
     {
         let dx = self.dx();
-        impl_util::cmap_1d(self, dx, f);
+        for (i, v) in self.as_view_mut().iter_mut().enumerate() {
+            let i = A::from(i + 1).unwrap();
+            *v = f(i * dx, *v);
+        }
         self.fill_boundary();
     }
 }

@@ -52,7 +52,6 @@ extern crate num_traits;
 pub mod padding;
 pub mod region;
 pub mod torus;
-mod impl_util;
 mod stencil;
 mod array;
 

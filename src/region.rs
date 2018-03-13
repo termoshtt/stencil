@@ -37,24 +37,30 @@ use ndarray::*;
 use num_traits::Float;
 use std::marker::PhantomData;
 
+/// Marker trait for boundary edge.
 pub trait Edge: Clone + Copy {
     fn len() -> usize;
 }
+
+/// Marker trait for open-edge
 #[derive(Clone, Debug, Copy)]
 pub struct Open {}
-#[derive(Clone, Debug, Copy)]
-pub struct Closed {}
 impl Edge for Open {
     fn len() -> usize {
         1
     }
 }
+
+/// Marker trait for closed-edge
+#[derive(Clone, Debug, Copy)]
+pub struct Closed {}
 impl Edge for Closed {
     fn len() -> usize {
         0
     }
 }
-///
+
+/// One-dimensional line with finite length
 #[derive(Debug, Clone)]
 pub struct Line<A: LinalgScalar, P: Padding, E: Edge> {
     data: Array1<A>,

@@ -1,4 +1,4 @@
-pub trait Padding {
+pub trait Padding: Clone + Copy {
     fn len() -> usize;
 }
 
@@ -6,8 +6,11 @@ pub trait LessEq<P: Padding>: Padding {}
 pub trait GreaterEq<P: Padding>: Padding {}
 pub trait EqualTo<P: Padding>: Padding {}
 
+#[derive(Clone, Debug, Copy)]
 pub struct P1 {}
+#[derive(Clone, Debug, Copy)]
 pub struct P2 {}
+#[derive(Clone, Debug, Copy)]
 pub struct P3 {}
 
 impl LessEq<P1> for P1 {}

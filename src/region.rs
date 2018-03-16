@@ -164,3 +164,21 @@ where
         }
     }
 }
+
+impl<'a, A: LinalgScalar, P: Padding, E: Edge> IntoNdProducer for &'a Line<A, P, E> {
+    type Item = &'a A;
+    type Dim = Ix1;
+    type Output = ArrayView1<'a, A>;
+    fn into_producer(self) -> Self::Output {
+        self.as_view()
+    }
+}
+
+impl<'a, A: LinalgScalar, P: Padding, E: Edge> IntoNdProducer for &'a mut Line<A, P, E> {
+    type Item = &'a mut A;
+    type Dim = Ix1;
+    type Output = ArrayViewMut1<'a, A>;
+    fn into_producer(self) -> Self::Output {
+        self.as_view_mut()
+    }
+}

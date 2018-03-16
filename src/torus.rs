@@ -172,3 +172,21 @@ impl<A: LinalgScalar + Float> Manifold for Torus<A, Ix2> {
         }
     }
 }
+
+impl<'a, A: LinalgScalar, D: Dimension> IntoNdProducer for &'a Torus<A, D> {
+    type Item = &'a A;
+    type Dim = D;
+    type Output = ArrayView<'a, A, D>;
+    fn into_producer(self) -> Self::Output {
+        self.as_view()
+    }
+}
+
+impl<'a, A: LinalgScalar, D: Dimension> IntoNdProducer for &'a mut Torus<A, D> {
+    type Item = &'a mut A;
+    type Dim = D;
+    type Output = ArrayViewMut<'a, A, D>;
+    fn into_producer(self) -> Self::Output {
+        self.as_view_mut()
+    }
+}

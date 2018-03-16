@@ -17,3 +17,4 @@ num-traits = "0.2"
 
 [dev-dependencies]
 ndarray-linalg = { version = "0.9", features = ["intel-mkl"] }
+asink = "0.1.1"

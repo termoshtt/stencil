@@ -83,7 +83,7 @@ impl<A: LinalgScalar, P: Padding, E: Edge> Line<A, P, E> {
 
     pub fn fill_edge(&mut self) {
         let n = self.data.len();
-        for i in 0..P::len() + E::len() - 1 {
+        for i in 0..P::len() - E::len() + 1 {
             self.data[i] = self.left;
             self.data[n - 1 - i] = self.right;
         }
